@@ -1,0 +1,38 @@
+mod commands;
+
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_fs::init())
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_store::Builder::new().build())
+        .invoke_handler(tauri::generate_handler![
+            commands::open_desk,
+            commands::create_desk,
+            commands::save_desk_json,
+            commands::read_note,
+            commands::write_note,
+            commands::create_note,
+            commands::rename_note,
+            commands::delete_note_file,
+            commands::export_desk_zip,
+            commands::search_notes,
+            commands::save_image,
+            commands::copy_image_to_desk,
+            commands::read_image_file,
+            commands::get_templates,
+        ])
+        .setup(|app| {
+            if cfg!(debug_assertions) {
+                app.handle().plugin(
+                    tauri_plugin_log::Builder::default()
+                        .level(log::LevelFilter::Info)
+                        .build(),
+                )?;
+            }
+            Ok(())
+        })
+        .run(tauri::generate_context!())
+        .expect("error while running tauri application");
+}
